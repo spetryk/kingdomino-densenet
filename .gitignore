@@ -1,0 +1,4 @@
+*.jpg
+*.hdf5
+*.pyc
+__pycache__/*
