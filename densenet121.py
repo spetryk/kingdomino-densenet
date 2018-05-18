@@ -13,20 +13,17 @@ from keras.callbacks import ModelCheckpoint
 import keras.backend as K
 from keras.preprocessing.image import ImageDataGenerator
 
-
 import numpy as np
-from tensorflow.python.tools import freeze_graph, optimize_for_inference_lib
-import tensorflow as tf
 
-import time
 from sklearn.metrics import log_loss
 from sklearn.utils import class_weight
 from custom_layers.scale_layer import Scale
 from load_data import load_data
-import scipy.misc
+
+import time
 import logging
 import math
-import cv2
+
 
 NUM_CLASSES = 18
 NUM_EPOCH = 10
@@ -292,9 +289,6 @@ if __name__ == '__main__':
                                                      np.unique(y_ints),
                                                      y_ints)
     class_weight_dict = dict(enumerate(class_weight))
-
-    for i in range(20):
-        cv2.imwrite('sample_train/img_' + str(i) + '_label' + str(Y_train[i]) + '.jpg', X_train[i])
 
 
     start = time.time()

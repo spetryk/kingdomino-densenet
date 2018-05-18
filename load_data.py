@@ -7,11 +7,11 @@ from sklearn.preprocessing import StandardScaler
 import os
 import matplotlib.pyplot as plt
 import glob
-import scipy.misc
+
 import re
 
 import cv2
-from keras.datasets import cifar10
+
 from keras import backend as K
 from keras.utils import np_utils
 
