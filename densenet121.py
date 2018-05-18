@@ -225,10 +225,10 @@ def dense_block(x, stage, nb_layers, nb_filter, growth_rate, dropout_rate=None, 
 if __name__ == '__main__':
 
     train_dir = 'train_dir/'
-    img_rows, img_cols = 32, 32 # Resolution of inputs
+    img_rows, img_cols = 64, 64 # Resolution of inputs
     channel = 3
     num_classes = NUM_CLASSES
-    batch_size = 8
+    batch_size = 256
     nb_epoch = NUM_EPOCH
     X_train, X_valid, X_test, Y_train, Y_valid, Y_test = load_data(train_dir, img_rows, img_cols, num_classes)
 
