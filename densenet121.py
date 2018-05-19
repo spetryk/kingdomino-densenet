@@ -230,7 +230,14 @@ if __name__ == '__main__':
     num_classes = NUM_CLASSES
     batch_size = 256
     nb_epoch = NUM_EPOCH
+
+    # Ensure training directory exists
+    if not os.path.isdir(train_dir):
+        print('Provided training directory does not exist. Please provide valid train directory.\n')
+        return
+
     X_train, X_valid, X_test, Y_train, Y_valid, Y_test = load_data(train_dir, img_rows, img_cols, num_classes)
+
 
     # Save_weights_only:
     #   - True: save model architecture separate from weights.
@@ -243,6 +250,9 @@ if __name__ == '__main__':
     # From https://machinelearningmastery.com/check-point-deep-learning-models-keras/
     curr_time = time.strftime("%Y%m%d-%H%M%S")
     if save_weights_only:
+        # Assert saved_weights folder exists
+        if not os.path.isdir('saved_weights'):
+            os.makedirs('saved_weights')
         filepath="saved_weights/"+curr_time+"weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
         checkpoint = ModelCheckpoint(filepath,
                                      monitor='val_acc',
@@ -251,6 +261,8 @@ if __name__ == '__main__':
                                      mode='max',
                                      save_weights_only=True)
     else:
+        if not os.path.isdir('saved_models'):
+            os.makedirs('saved_models')
         filepath="saved_models/"+curr_time+"weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
         checkpoint = ModelCheckpoint(filepath,
                                      monitor='val_acc',
@@ -269,6 +281,8 @@ if __name__ == '__main__':
 
     if save_weights_only:
         # Save the model architecture
+        if not os.path.isdir('model_architectures'):
+            os.makedirs('model_architectures')
         with open('model_architectures/model_architecture.json', 'w') as f:
             f.write(model.to_json())
 
