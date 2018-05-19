@@ -20,6 +20,8 @@ from sklearn.utils import class_weight
 from custom_layers.scale_layer import Scale
 from load_data import load_data
 
+import os
+import sys
 import time
 import logging
 import math
@@ -234,7 +236,7 @@ if __name__ == '__main__':
     # Ensure training directory exists
     if not os.path.isdir(train_dir):
         print('Provided training directory does not exist. Please provide valid train directory.\n')
-        return
+        sys.exit(1)
 
     X_train, X_valid, X_test, Y_train, Y_valid, Y_test = load_data(train_dir, img_rows, img_cols, num_classes)
 
@@ -256,7 +258,7 @@ if __name__ == '__main__':
         filepath="saved_weights/"+curr_time+"weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
         checkpoint = ModelCheckpoint(filepath,
                                      monitor='val_acc',
-                                     verbose=1,
+                            verbose=1,
                                      save_best_only=True,
                                      mode='max',
                                      save_weights_only=True)
