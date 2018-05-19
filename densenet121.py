@@ -9,7 +9,7 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.pooling import AveragePooling2D, GlobalAveragePooling2D, MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.models import Model
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ModelCheckpoint, CSVLogger
 import keras.backend as K
 from keras.preprocessing.image import ImageDataGenerator
 
@@ -259,7 +259,10 @@ if __name__ == '__main__':
                                      mode='max',
                                      save_weights_only=False)
 
-    callbacks_list = [checkpoint]
+    # Create csv file to log training
+    csv_logger = CSVLogger(curr_time + 'history.csv', append=True)
+
+    callbacks_list = [checkpoint, csv_logger]
 
     # Load our model
     model = densenet121_model(img_rows=img_rows, img_cols=img_cols, color_type=channel, num_classes=num_classes)
