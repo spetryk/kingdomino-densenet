@@ -5,6 +5,8 @@
 
 
 from custom_layers.scale_layer import Scale
+from densenet121 import w_categorical_crossentropy
+import numpy as np
 
 """
 Copyright (c) 2017, by the Authors: Amir H. Abdi
@@ -50,6 +52,8 @@ graph definition [default: model.ascii]
 
 output_node_prefix: the prefix to use for output nodes. [default: output_node]
 
+class_weight_file: file of saved numpy array from training run (e.g. class_weights/run1.npy)
+
 '''
 
 
@@ -61,6 +65,8 @@ output_node_prefix: the prefix to use for output nodes. [default: output_node]
 
 import argparse
 parser = argparse.ArgumentParser(description='set input arguments')
+parser.add_argument('-class_weight_file', action="store",
+                    dest='class_weight_file', type=str, default='')
 parser.add_argument('-input_fld', action="store",
                     dest='input_fld', type=str, default='.')
 parser.add_argument('-output_fld', action="store",
@@ -119,7 +125,10 @@ else:
     K.set_image_data_format('channels_last')
 
 try:
-    net_model = load_model(weight_file_path, custom_objects = {'Scale': Scale})
+    # Load wclass weights from model's run
+    class_weights = np.load(args.class_weight_file)
+    custom_loss = w_categorical_crossentropy(class_weights)
+    net_model = load_model(weight_file_path, custom_objects = {'Scale': Scale, 'loss': custom_loss})
 except ValueError as err:
     print('''Input file specified ({}) only holds the weights, and not the model defenition.
     Save the model using mode.save(filename.h5) which will contain the network architecture
