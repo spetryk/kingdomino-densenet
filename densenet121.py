@@ -30,7 +30,35 @@ import math
 NUM_CLASSES = 18
 NUM_EPOCH = 10
 
-def densenet121_model(img_rows, img_cols, color_type=1, nb_dense_block=4, growth_rate=32, nb_filter=64, reduction=0.5, dropout_rate=0.0, weight_decay=1e-4, num_classes=None):
+def w_categorical_crossentropy(weights):
+    """
+    A weighted version of keras.objectives.categorical_crossentropy
+    
+    Variables:
+        weights: numpy array of shape (C,) where C is the number of classes
+    
+    Usage:
+        weights = np.array([0.5,2,10]) # Class one at 0.5, class 2 twice the normal weights, class 3 10x.
+        loss = weighted_categorical_crossentropy(weights)
+        model.compile(loss=loss,optimizer='adam')
+    """
+    
+    weights = K.variable(weights)
+        
+    def loss(y_true, y_pred):
+        # scale predictions so that the class probas of each sample sum to 1
+        y_pred /= K.sum(y_pred, axis=-1, keepdims=True)
+        # clip to prevent NaN's and Inf's
+        y_pred = K.clip(y_pred, K.epsilon(), 1 - K.epsilon())
+        # calc
+        loss = y_true * K.log(y_pred) * weights
+        loss = -K.sum(loss, -1)
+        return loss
+    
+    return loss
+
+
+def densenet121_model(img_rows, img_cols, color_type=1, nb_dense_block=4, growth_rate=32, nb_filter=64, reduction=0.5, dropout_rate=0.0, weight_decay=1e-4, num_classes=None, class_weight):
     '''
     DenseNet 121 Model for Keras
 
@@ -123,7 +151,7 @@ def densenet121_model(img_rows, img_cols, color_type=1, nb_dense_block=4, growth
 
     # Learning rate is changed to 0.001
     sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=sgd, loss=w_categorical_crossentropy(class_weight), metrics=['accuracy'])
 
     return model
 
@@ -278,8 +306,13 @@ if __name__ == '__main__':
 
     callbacks_list = [checkpoint, csv_logger]
 
+    # Compute balanced class weights
+    # Convert labels to integer format for sklearn's compute_class_weight
+    y_ints = [y.argmax() for y in Y_train]
+    class_weight = class_weight.compute_class_weight('balanced', np.unique(y_ints), y_ints)
+
     # Load our model
-    model = densenet121_model(img_rows=img_rows, img_cols=img_cols, color_type=channel, num_classes=num_classes)
+    model = densenet121_model(img_rows=img_rows, img_cols=img_cols, color_type=channel, num_classes=num_classes, class_weight=class_weight)
 
     if save_weights_only:
         # Save the model architecture
@@ -301,15 +334,6 @@ if __name__ == '__main__':
 
     TOTAL_IMGS = math.floor(len(X_train)*1.5)
 
-    # Compute balanced class weights
-    # Convert labels to integer format for sklearn's compute_class_weight
-    y_ints = [y.argmax() for y in Y_train]
-    class_weight = class_weight.compute_class_weight('balanced',
-                                                     np.unique(y_ints),
-                                                     y_ints)
-    class_weight_dict = dict(enumerate(class_weight))
-
-
     start = time.time()
     # Start Fine-tuning
     model.fit_generator(datagen.flow(X_train, Y_train,
@@ -320,8 +344,7 @@ if __name__ == '__main__':
                         shuffle=True,
                         verbose=1,
                         validation_data=(X_valid, Y_valid),
-                        callbacks=callbacks_list,
-                        class_weight=class_weight_dict)
+                        callbacks=callbacks_list)
 
     end = time.time()
     seconds_elapsed = end-start
