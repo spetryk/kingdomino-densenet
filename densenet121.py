@@ -58,7 +58,7 @@ def w_categorical_crossentropy(weights):
     return loss
 
 
-def densenet121_model(img_rows, img_cols, color_type=1, nb_dense_block=4, growth_rate=32, nb_filter=64, reduction=0.5, dropout_rate=0.0, weight_decay=1e-4, num_classes=None, class_weight):
+def densenet121_model(img_rows, img_cols, class_weight, color_type=1, nb_dense_block=4, growth_rate=32, nb_filter=64, reduction=0.5, dropout_rate=0.0, weight_decay=1e-4, num_classes=None):
     '''
     DenseNet 121 Model for Keras
 
@@ -312,7 +312,7 @@ if __name__ == '__main__':
     class_weight = class_weight.compute_class_weight('balanced', np.unique(y_ints), y_ints)
 
     # Load our model
-    model = densenet121_model(img_rows=img_rows, img_cols=img_cols, color_type=channel, num_classes=num_classes, class_weight=class_weight)
+    model = densenet121_model(img_rows=img_rows, img_cols=img_cols, class_weight=class_weight, color_type=channel, num_classes=num_classes)
 
     if save_weights_only:
         # Save the model architecture
