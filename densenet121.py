@@ -33,18 +33,18 @@ NUM_EPOCH = 10
 def w_categorical_crossentropy(weights):
     """
     A weighted version of keras.objectives.categorical_crossentropy
-    
+
     Variables:
         weights: numpy array of shape (C,) where C is the number of classes
-    
+
     Usage:
         weights = np.array([0.5,2,10]) # Class one at 0.5, class 2 twice the normal weights, class 3 10x.
         loss = weighted_categorical_crossentropy(weights)
         model.compile(loss=loss,optimizer='adam')
     """
-    
+
     weights = K.variable(weights)
-        
+
     def loss(y_true, y_pred):
         # scale predictions so that the class probas of each sample sum to 1
         y_pred /= K.sum(y_pred, axis=-1, keepdims=True)
@@ -54,7 +54,7 @@ def w_categorical_crossentropy(weights):
         loss = y_true * K.log(y_pred) * weights
         loss = -K.sum(loss, -1)
         return loss
-    
+
     return loss
 
 
@@ -310,6 +310,11 @@ if __name__ == '__main__':
     # Convert labels to integer format for sklearn's compute_class_weight
     y_ints = [y.argmax() for y in Y_train]
     class_weight = class_weight.compute_class_weight('balanced', np.unique(y_ints), y_ints)
+
+    # Save weights in numpy array for use in converting to pb file
+    if not os.path.isdir('class_weights'):
+        os.makedirs('class_weights')
+    np.save('class_weights/' + curr_time + '_cWeights.npy', class_weight)
 
     # Load our model
     model = densenet121_model(img_rows=img_rows, img_cols=img_cols, class_weight=class_weight, color_type=channel, num_classes=num_classes)
