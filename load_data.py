@@ -7,11 +7,11 @@ from sklearn.preprocessing import StandardScaler
 import os
 import matplotlib.pyplot as plt
 import glob
-
+import scipy.misc
 import re
 
 import cv2
-
+from keras.datasets import cifar10
 from keras import backend as K
 from keras.utils import np_utils
 
@@ -59,9 +59,6 @@ def get_train_valid_test(train_dir, img_rows, img_cols):
     # Resize images
     imgs = list(map(lambda x: cv2.resize(x, (img_rows, img_cols)), imgs))
 
-    # For each image, get horizontal, vertical, horizontal + vertical flips
-    imgs = np.array(imgs, dtype='uint8')
-    imgs, labels = generate_flips(imgs, labels)
 
     # Normalize all images the same way the ImageNet pretrained model did
     # (from densenet fine tune github: https://github.com/flyyufelix/cnn_finetune)
@@ -81,6 +78,9 @@ def get_train_valid_test(train_dir, img_rows, img_cols):
     # Split first into train + (valid and test), then (valid and test) into valid + test
     X_train, X_valid_test, Y_train, y_valid_test = train_test_split(
         imgs, labels, test_size=(VAL_SIZE+TEST_SIZE), random_state=42, shuffle=True)
+
+    # For each image in train set, get horizontal, vertical, horizontal + vertical flips
+    X_train, Y_train = generate_flips(X_train, Y_train)
 
     X_valid, X_test, Y_valid, Y_test = train_test_split(
         X_valid_test, y_valid_test, test_size=TEST_SIZE/(VAL_SIZE+TEST_SIZE), random_state=42, shuffle=True)
