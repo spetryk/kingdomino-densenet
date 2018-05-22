@@ -29,6 +29,8 @@ import math
 
 NUM_CLASSES = 18
 NUM_EPOCH = 10
+SAVED_MODEL_FILE = '' # saved .hdf5 file to resume from training
+
 
 def w_categorical_crossentropy(weights):
     """
@@ -56,6 +58,9 @@ def w_categorical_crossentropy(weights):
         return loss
 
     return loss
+
+
+
 
 
 def densenet121_model(img_rows, img_cols, class_weight, color_type=1, nb_dense_block=4, growth_rate=32, nb_filter=64, reduction=0.5, dropout_rate=0.0, weight_decay=1e-4, num_classes=None):
@@ -151,7 +156,7 @@ def densenet121_model(img_rows, img_cols, class_weight, color_type=1, nb_dense_b
 
     # Learning rate is changed to 0.001
     sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(optimizer=sgd, loss=w_categorical_crossentropy(class_weight), metrics=['accuracy'])
+    model.compile(optimizer=sgd, loss=w_categorical_crossentropy(class_weights), metrics=['accuracy'])
 
     return model
 
@@ -317,7 +322,10 @@ if __name__ == '__main__':
     np.save('class_weights/' + curr_time + '_cWeights.npy', class_weight)
 
     # Load our model
-    model = densenet121_model(img_rows=img_rows, img_cols=img_cols, class_weight=class_weight, color_type=channel, num_classes=num_classes)
+    if SAVED_MODEL_FILE == '':
+        model = densenet121_model(img_rows=img_rows, img_cols=img_cols, class_weight=class_weight, color_type=channel, num_classes=num_classes)
+    else:
+        model = load_model(SAVED_MODEL_FILE, custom_objects = {'Scale': Scale})
 
     if save_weights_only:
         # Save the model architecture
@@ -357,6 +365,7 @@ if __name__ == '__main__':
     # Make predictions
     predictions_valid = model.predict(X_test, verbose=1)
     predictions_valid = np.argmax(predictions_valid, axis = 1)
+
 
     accuracy = np.sum(predictions_valid == Y_test)/len(Y_test)
     print("Accuracy: " + str(accuracy))
