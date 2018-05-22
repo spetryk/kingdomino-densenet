@@ -1,0 +1,8 @@
+
+20180522-003115
+ Mean: None
+ Std: None
+ Num train images (including augmented): 28839
+ Num epochs: 3
+ Time elapsed (minutes): 352.102
+ Test accuracy: 0.0
